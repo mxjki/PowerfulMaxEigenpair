@@ -1,0 +1,255 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+<!--
+  %\VignetteIndexEntry{PowerfulTriMaxEigenpair Vignette} 
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+-->
+---
+title: "PowerfulTriMaxEigenpair Vignette"
+header-includes:
+    - \usepackage{url}
+author:
+- Yue-Shuang Li
+- Xiao-Jun Mao
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+`PowerfulTriMaxEigenpair` is a package for computing the maximal eigenpair of Hermitizable tridiagonal matrices. This vignette is a simple guide to using the package. All the algorithms and examples provided in this vignette are available in the paper "Speed of stability for birth--death processes" and "Hermitizable, isospectral complex matrices or differential operators" by Mu-Fa Chen and "Development of powerful algorithm
+for maximal eigenpair" by Mu-Fa Chen and Yue-Shuang Li. The papers [Chen (2010)](http://math0.bnu.edu.cn/~chenmf/) and [Chen (2018)](http://math0.bnu.edu.cn/~chenmf/) are now included in the Vol 4, in the middle of the website:
+\begin{center}
+\url{http://math0.bnu.edu.cn/~chenmf/}
+\end{center}
+Let us install and require the package `PowerfulTriMaxEigenpair` first.
+```{r, eval = TRUE, echo = FALSE}
+source("../R/powerful.maxeig.tri.R")
+source("../R/powerful.seceig.tri.R")
+source("../R/thomas.tri.sol.R")
+source("../R/tridiag.R")
+```
+
+```{r, eval = FALSE, echo = TRUE}
+require(Powerful_MaxEigenpair)
+```
+
+It offers two main algorithms:
+
+* `powerful.maxeig.tri()`: calculate the maximal eigenpair for Hermitizable tridiagonal matrix. 
+    * The precise level used for output results is set to be `digit.thresh = 6` which implies 1e-6 without any special requirement. Same for the following three algorithms and the examples shown in this vignette.
+    * This algorithm works only for Hermitizable tridiagonal matrix.
+    
+* `powerful.secondeig.tri()`: calculate the next to maximal eigenpair for the tridiagonal matrix. As mentioned in the cited paper, for simplicity, here we assume that the sums of each row of the input tridiagonal matrix should be 0, i.e, $A_{i}=0$ for all $i\in E$. Similarly, there is an option `digit.thresh` which is the same as defined in function `powerful.maxeig.tri()`.
+    
+There are two auxiliary functions `tridia()` and `thomas.tri.sol()` where:
+
+- `tridiag()`: generate tridiagonal matrix $A$ based on three input vectors.
+- `thomas.tri.sol()`: solve the linear equation (-$Q$-$z$*$I$)$w$=$v$ by Thomas algorithm.
+
+## Acknowledgement
+The algorithm is reformulated based on a series of recent papers by Mu-Fa Chen. The research project is supported in part by the National Natural Science Foundation of China (No. 11131003, 11626245, 11771046) and the Project Funded by the Priority Academic Program Development of Jiangsu Higher Education Institutions.
+
+## Examples
+
+We show most of the examples in the paper "Development of powerful algorithm
+for maximal eigenpair" by Mu-Fa Chen and Yue-Shuang Li in this section. For a convenient comparison, we keep the same subsection names and examples as the paper "Development of powerful algorithm
+for maximal eigenpair". 
+
+### The maximal eigenpair
+Armed with `powerful.maxeig.tri()`, we can calculate the maximal eigenpair for the tridiagonal matrix.
+
+#### Example 4
+```{r, eval = FALSE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 16, 50, 100, 500, 1000, 5000, 10000, 15000)
+for (j in 1:9) {
+    a = rep(1,(nn[j] - 1))
+    b = rep(2,(nn[j]-1))
+    C = rep(3,nn[j])
+
+    if (j <= 4){
+      print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:5])
+    }else{
+      if (j <=6){
+      print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:3])
+      }else{
+        print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:2])
+      }
+    }
+}
+```
+```{r, eval = TRUE, echo=FALSE, results='hold', tidy=TRUE}
+print(c(0.253835, 0.335440, 0.342107, 0.342148, 0.342148))
+print(c(0.182046, 0.215330, 0.219673, 0.219732, 0.219732))
+print(c(0.171577, 0.175993, 0.176912, 0.176937, 0.176937))
+print(c(0.171573, 0.172686, 0.172934, 0.172941, 0.172941))
+print(c(0.171573, 0.171618, 0.171628))
+print(c(0.171573, 0.171584, 0.171587))
+print(c(0.171573, 0.171573))
+print(c(0.171573, 0.171573))
+print(c(0.171573, 0.171573))
+```
+
+#### Example 5
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+a = c(0.5142,0.2115,0.8442,0.2347,0.9837)
+b = c(0.9962,0.1111,0.1405,0.7595,0.0781)
+C = c(-2.334,-2.6725,-2.263,-2.8457,-2.2257,-2.1582)
+maxeig=powerful.maxeig.tri(a, b, C, digit.thresh = 6)
+
+print(maxeig$m-maxeig$z[1:5])
+```
+
+#### Example 6
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+a = as.complex(c(4*2-4i, 4*3-4i, 1-2i, 2-3i, 4+2i))
+b = as.complex(c(2+1i, 3+1i, 1+2i, 2+3i, 2-1i))
+C = c(2, 1, 3, 2, 4, -3)
+maxeig=powerful.maxeig.tri(a, b, C, digit.thresh = 6)
+
+print(maxeig$m-maxeig$z[1:5])
+```
+
+
+#### Example 7
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+a = as.complex(c(4*2-4i, 36*2-36i, 144*2-144i, 400*2-400i))
+b = as.complex(c(2+1i, 32+16i, 81*2+81i, 256*2+256i))
+C = c(1, 1, 1, 1, 1)
+maxeig=powerful.maxeig.tri(a, b, C, digit.thresh = 6)
+
+print(maxeig$m-maxeig$z[1:3])
+```
+
+#### Example 8
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 16, 32, 50, 100)
+for (i in 1:5) {
+    a = c(1:(nn[i] - 1))
+    b = 2*c(1:(nn[i] - 1))
+    C = c(b[1], 3*c(1:(nn[i] - 1))+2)
+  
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 5)$z[1:4])
+}
+```
+
+#### Example 9
+```{r, eval = FALSE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 50, 100, 500, 1000, 5000)
+for (i in 1:6) {
+    a = c(1:(nn[i] - 1))
+    a = a*(a-1/2)*(a^2+3*a+3)
+    b = c(1:(nn[i]-1))^4
+    C = c(b[1], a[1:(nn[i] - 2)] + b[2:(nn[i] - 1)], a[nn[i] - 1] + nn[i]^4)
+  
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:4])
+}
+```
+```{r, eval = TRUE, echo=FALSE, results='hold', tidy=TRUE}
+print(c(0.416918, 0.627353, 0.633461, 0.633466))
+print(c(0.357080, 0.541483, 0.548162, 0.548169))
+print(c(0.347301, 0.526674, 0.533345, 0.533353))
+print(c(0.335057, 0.507877, 0.514489, 0.514498))
+print(c(0.332284, 0.503583, 0.510173, 0.510182))
+print(c(0.328655, 0.497945, 0.504504, 0.504512))
+```
+
+#### Example 10
+```{r, eval = FALSE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 100, 500, 1000, 5000, 7500, 10^4)
+for (i in 1:7) {
+    a = c(1:(nn[i] - 1))^2
+    b = c(1:(nn[i] - 1))^2
+    C = c(b[1], a[1:(nn[i] - 2)] + b[2:(nn[i] - 1)], a[nn[i] - 1] + nn[i]^2)
+
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:4])
+}
+```
+```{r, eval = TRUE, echo=FALSE, results='hold', tidy=TRUE}
+print(c(0.406762, 0.514094, 0.525176, 0.525268))
+print(c(0.304993, 0.369950, 0.376269, 0.376383))
+print(c(0.279999, 0.333226, 0.338230, 0.338329))
+print(c(0.273336, 0.322412, 0.327148, 0.327240))
+print(c(0.263220, 0.304128, 0.308454, 0.308529))
+print(c(0.261484, 0.300603, 0.304845, 0.304918))
+print(c(0.260397, 0.298305, 0.302489, 0.302561))
+```
+
+#### Example 11
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(0.01, 1, 100, 10^6)
+a = c(3,2,10,11)
+b = c(5,4,1,6)
+
+for (i in 1:4) {
+    C = c(5, 7, 3, 16, 11 + nn[i])
+    
+    if (i ==1){
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 9)$z[1:4])
+    }
+    
+    if (i ==2){
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 7)$z[1:4])
+    }
+    
+    if (i >= 3){
+    print(powerful.maxeig.tri(a, b, C, digit.thresh = 6)$z[1:4])
+    }
+}
+```
+
+### Next to the maximal eigenpair
+Armed with `powerful.seceig.tri()`, we can calculate next to the maximal eigenpair for the tridiagonal matrix.
+
+#### Example 14
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 16, 50, 100, 1000, 10000, 15000)
+for (j in 1:7) {
+    
+    a = rep(1,(nn[j] - 1))
+    b = rep(2,(nn[j]-1))
+    
+    if (j<=5){
+      print(powerful.seceig.tri(a, b, digit.thresh = 6)$z[1:4])
+    }else{
+      print(powerful.seceig.tri(a, b, digit.thresh = 6)$z[1:2])
+    }
+    
+}
+```
+
+#### Example 15
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 16, 50, 100, 1000, 10000)
+for (i in 1:6) {
+    a = c(1:(nn[i] - 1))^2
+    b = c(1:(nn[i] - 1))^2
+
+    print(powerful.seceig.tri(a, b, digit.thresh = 6)$z[1:4])
+}
+```
+
+#### Example 16
+```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
+a = c(3,2,10,11)
+b = c(5,4,1,6)
+
+print(powerful.seceig.tri(a, b, digit.thresh = 5)$z[1:4])
+```
+
+
+# References
+[1] M. F. Chen. "Efficient initials for computing the maximal eigenpair."" In: _Frontiers of Mathematics in China_ 11(6) (2016), pp. 1379--1418.
+
+[2] M. F. Chen. "Global algorithms for maximal eigenpair."" In: _Frontiers of Mathematics in China_ 12(5) (2017), pp. 1023--1043.
+
+[3] M. F. Chen. "Hermitizable, isospectral complex matrices or differential operators." In: _Frontiers of Mathematics in China_ 13(6) (2018), pp. 1267-1311.
+
+[4] M. F. Chen. and Y.S. Li. "Development of powerful algorithm for maximal eigenpair." In: _Frontiers of Mathematics in China_ (2018)
+
+Additional references can be found from volumes 1-4 in the middle of Chen's homepage:
+\begin{center}
+\url{http://math0.bnu.edu.cn/~chenmf/}
+\end{center}
