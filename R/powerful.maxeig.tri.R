@@ -17,7 +17,7 @@
 #' a = c(1:(nn - 1))^2
 #' b = c(1:(nn - 1))^2
 #' C = c(b[1], a[1:(nn - 2)] + b[2:(nn - 1)], a[nn - 1] + nn^2)
-#'powerful.maxeig.tri(a, b, C, digit.thresh = 6)
+#' powerful.maxeig.tri(a, b, C, digit.thresh = 6)
 
 #' @export
 powerful.maxeig.tri = function(a, b, C, digit.thresh = 6) {

@@ -4,7 +4,6 @@
 #'
 #' @param a The lower diagonal vector.
 #' @param b The upper diagonal vector.
-#' @param C The main diagonal vector. 
 #' @param digit.thresh The precise level of output results.
 #'
 #' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
@@ -16,8 +15,7 @@
 #' nn = 8
 #' a = c(1:(nn - 1))^2
 #' b = c(1:(nn - 1))^2
-#' C = c(b[1], a[1:(nn - 2)] + b[2:(nn - 1)], a[nn - 1] + nn^2)
-#'powerful.seceig.tri(a, b, C, digit.thresh = 6)
+#' powerful.seceig.tri(a, b, digit.thresh = 6)
 
 #' @export
 powerful.seceig.tri = function(a, b, digit.thresh = 6) {
